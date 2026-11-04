@@ -1,0 +1,137 @@
+//
+// Copyright (C) 2026 The Android Open Source Project
+// Copyright (C) 2026 AERA Recovery Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+soong_namespace {
+}
+
+prebuilt_root {
+    name: "aston_file_contexts.recovery",
+    src: ":file_contexts.concat.tmp",
+    filename: "file_contexts",
+    recovery: true,
+    install_in_root: true,
+}
+
+// Stock OxygenOS / ColorOS full OTAs omit my_company and my_preload from
+// payload.bin while still marking both first_stage_mount (without nofail) in
+// fstab.qcom. Build verified 328 KiB EROFS + AVB stubs matching Oplus's
+// oplus_avb.pubkey so recovery can ensure both partitions exist in super when
+// transitioning from custom ROM layouts back to stock firmware.
+genrule {
+    name: "aston_oplus_stub_c_gen",
+    tools: [
+        "mkfs.erofs",
+        "avbtool",
+        "fec",
+    ],
+    srcs: ["security/testkey_rsa2048.pem"],
+    out: ["oplus_my_company.img"],
+    cmd: "export PATH=\"$$(dirname $(location fec)):$$PATH\" && " +
+        "rm -rf $(genDir)/d && mkdir -p $(genDir)/d/app $(genDir)/d/lib $(genDir)/d/lib64 $(genDir)/d/overlay $(genDir)/d/priv-app && " +
+        "printf 'ro.oplus.image.my_company.type=empty\\nro.oplus.image.my_company.version=version_stub.e34e76d3\\n' > $(genDir)/d/build.prop && " +
+        "printf '/ u:object_r:system_file:s0\\n/overlay(/.*)? u:object_r:vendor_overlay_file:s0\\n/.* u:object_r:system_file:s0\\n' > $(genDir)/fc && " +
+        "$(location mkfs.erofs) -z lz4 --mount-point=/my_company --file-contexts=$(genDir)/fc $(out) $(genDir)/d >/dev/null && " +
+        "$(location avbtool) add_hashtree_footer --image $(out) --partition_size 335872 --partition_name my_company " +
+        "--hash_algorithm sha256 --key $(in) --algorithm SHA256_RSA2048 " +
+        "--prop com.android.build.oplus_custom_images.os_version:11 --prop com.android.build.oplus_custom_images.security_patch:2020-10-05",
+}
+
+prebuilt_etc {
+    name: "aston_oplus_stub_c.recovery",
+    src: ":aston_oplus_stub_c_gen",
+    filename: "oplus_my_company.img",
+    recovery: true,
+}
+
+genrule {
+    name: "aston_oplus_stub_p_gen",
+    tools: [
+        "mkfs.erofs",
+        "avbtool",
+        "fec",
+    ],
+    srcs: ["security/testkey_rsa2048.pem"],
+    out: ["oplus_my_preload.img"],
+    cmd: "export PATH=\"$$(dirname $(location fec)):$$PATH\" && " +
+        "rm -rf $(genDir)/d && mkdir -p $(genDir)/d/app $(genDir)/d/lib $(genDir)/d/lib64 $(genDir)/d/overlay $(genDir)/d/priv-app && " +
+        "printf 'ro.oplus.image.my_preload.type=empty\\nro.oplus.image.my_preload.version=version_stub.e34e76d3\\n' > $(genDir)/d/build.prop && " +
+        "printf '/ u:object_r:system_file:s0\\n/overlay(/.*)? u:object_r:vendor_overlay_file:s0\\n/.* u:object_r:system_file:s0\\n' > $(genDir)/fc && " +
+        "$(location mkfs.erofs) -z lz4 --mount-point=/my_preload --file-contexts=$(genDir)/fc $(out) $(genDir)/d >/dev/null && " +
+        "$(location avbtool) add_hashtree_footer --image $(out) --partition_size 335872 --partition_name my_preload " +
+        "--hash_algorithm sha256 --key $(in) --algorithm SHA256_RSA2048 " +
+        "--prop com.android.build.oplus_custom_images.os_version:11 --prop com.android.build.oplus_custom_images.security_patch:2020-10-05",
+}
+
+prebuilt_etc {
+    name: "aston_oplus_stub_p.recovery",
+    src: ":aston_oplus_stub_p_gen",
+    filename: "oplus_my_preload.img",
+    recovery: true,
+}
+
+cc_library_static {
+    name: "libinit_aston",
+    recovery_available: true,
+    cflags: [
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+    ],
+    include_dirs: ["system/core/init"],
+    shared_libs: ["libbase"],
+    srcs: ["libinit/libinit_aston.cpp"],
+}
+
+cc_binary {
+    name: "aston-vab-guard",
+    recovery: true,
+    cflags: [
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-D_FILE_OFFSET_BITS=64",
+    ],
+    shared_libs: [
+        "libbase",
+        "libcutils",
+        "liblog",
+        "liblp",
+    ],
+    static_libs: [
+        "libdm",
+        "libext2_uuid",
+    ],
+    srcs: ["vab_guard/aston_vab_guard.cpp"],
+}
+
+// Stock SM8550 KeyMint HAL links against android.hardware.security.rkp-V3-ndk.so
+// while only referencing the V2 IRpcHardwareInfo / IRemotelyProvisionedComponent
+// symbols exported by this tree. Provide a V2-backed shim so KeyMint loads
+// without unresolved V3 symbols in recovery.
+cc_library_shared {
+    name: "libaston_rkp_v3_compat",
+    stem: "android.hardware.security.rkp-V3-ndk",
+    relative_install_path: "aston-compat",
+    whole_static_libs: ["android.hardware.security.rkp-V2-ndk"],
+    shared_libs: [
+        "libbinder_ndk",
+        "liblog",
+    ],
+}
+
+cc_library_shared {
+    name: "libaston_keymint_v2_compat",
+    stem: "android.hardware.security.keymint-V2-ndk",
+    relative_install_path: "aston-compat",
+    whole_static_libs: ["android.hardware.security.keymint-V2-ndk"],
+    shared_libs: [
+        "libaston_rkp_v3_compat",
+        "android.hardware.security.secureclock-V1-ndk",
+        "libbinder_ndk",
+        "liblog",
+    ],
+}
