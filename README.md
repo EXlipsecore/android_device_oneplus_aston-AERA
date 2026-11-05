@@ -23,10 +23,12 @@
 
 ```sh
 mkdir -p ~/aera && cd ~/aera
-repo init -u https://github.com/AERA-Recovery/android_manifest -b aera-16.0
+repo init --repo-url=https://gerrit.googlesource.com/git-repo -u https://github.com/AERA-Recovery/android_manifest.git -b aera-16.0
+mkdir -p device/oneplus
+git clone -b aera-16.0 https://github.com/EXlipsecore/android_device_oneplus_aston-AERA.git device/oneplus/aston
+mkdir -p .repo/local_manifests
+cp device/oneplus/aston/aera-local-manifest.xml .repo/local_manifests/aston.xml
 repo sync -c -j$(nproc --all)
-
-git clone https://github.com/EXlipsecore/android_device_oneplus_aston-AERA.git -b aera-16.0 device/oneplus/aston
 
 source build/envsetup.sh
 lunch twrp_aston-bp2a-eng
