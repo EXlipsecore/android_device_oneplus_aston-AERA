@@ -28,7 +28,7 @@ repo init --repo-url=https://gerrit.googlesource.com/git-repo --repo-rev=stable 
 mkdir -p device/oneplus .repo/local_manifests &&
 git clone -b aera-16.0 https://github.com/EXlipsecore/android_device_oneplus_aston-AERA.git device/oneplus/aston &&
 cp device/oneplus/aston/aera-local-manifest.xml .repo/local_manifests/aston.xml &&
-repo sync -c --force-sync --no-clone-bundle --no-tags -j16 &&
+repo sync -c --force-sync --no-clone-bundle --no-tags -j$(nproc) &&
 source build/envsetup.sh &&
 lunch twrp_aston-bp2a-eng &&
 mka -j16 adbd recoveryimage
