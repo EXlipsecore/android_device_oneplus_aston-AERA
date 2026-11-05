@@ -30,6 +30,6 @@ git clone -b aera-16.0 https://github.com/EXlipsecore/android_device_oneplus_ast
 cp device/oneplus/aston/aera-local-manifest.xml .repo/local_manifests/aston.xml &&
 repo sync -c --force-sync --no-clone-bundle --no-tags -j16 &&
 source build/envsetup.sh &&
-lunch twrp_aston-eng &&
+lunch twrp_aston-bp2a-eng &&
 mka -j16 adbd recoveryimage
 ```
