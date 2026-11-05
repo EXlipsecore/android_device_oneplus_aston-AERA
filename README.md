@@ -21,6 +21,7 @@
 
 ## Build
 
+```
 mkdir -p ~/android/AERA_16.0 &&
 cd ~/android/AERA_16.0 &&
 repo init --repo-url=https://gerrit.googlesource.com/git-repo --repo-rev=stable -u https://github.com/AERA-Recovery/android_manifest.git -b aera-16.0 &&
