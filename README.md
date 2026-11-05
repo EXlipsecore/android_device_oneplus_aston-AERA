@@ -31,5 +31,5 @@ cp device/oneplus/aston/aera-local-manifest.xml .repo/local_manifests/aston.xml 
 repo sync -c --force-sync --no-clone-bundle --no-tags -j$(nproc) &&
 source build/envsetup.sh &&
 lunch twrp_aston-bp2a-eng &&
-mka -j16 adbd recoveryimage
+mka adbd recoveryimage
 ```
