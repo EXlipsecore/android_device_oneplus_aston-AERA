@@ -620,7 +620,7 @@ ndk::ScopedAStatus Vibrator::perform(Effect effect, EffectStrength es,
     } else {
         // AOSP-keyed streams (no ColorOS remap). CLICK..HEAVY_CLICK always;
         // RINGTONE_1..15 and TEXTURE_TICK only when the device ships a stream
-        // (gated so salami/dodge without those arrays stay unchanged).
+        // (gated so devices without those arrays retain their existing behavior).
         const bool known =
                 (effect >= Effect::CLICK && effect <= Effect::HEAVY_CLICK) ||
                 (effect >= Effect::RINGTONE_1 && effect <= Effect::RINGTONE_15 &&
