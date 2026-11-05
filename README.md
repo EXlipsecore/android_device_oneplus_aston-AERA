@@ -1,4 +1,4 @@
-# AERA Recovery device tree for OnePlus 12R / Ace 3 (aston)
+# AERA Recovery device tree for OnePlus 12R (aston) / Ace 3 (astonc)
 
 ## Supported variants
 
