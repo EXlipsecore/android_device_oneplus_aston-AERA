@@ -84,6 +84,7 @@ BOARD_ODMIMAGE_FILE_SYSTEM_TYPE      := ext4
 TARGET_COPY_OUT_ODM                  := odm
 AERA_USE_DMCTL                       := true
 BOARD_ROOT_EXTRA_FOLDERS             := acct apex config firmware persist postinstall
+BOARD_RECOVERY_ROOT_RSYNC_EXCLUDE    := odm/etc odm/firmware odm/vendor
 
 # Verified Boot (AVB)
 BOARD_AVB_ENABLE                           := true
