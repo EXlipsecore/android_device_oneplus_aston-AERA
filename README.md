@@ -19,17 +19,26 @@
 - F2FS filesystem compression (`fscompress`) on Format Data
 - WCN6855 (`kiwi_v2`) Wi-Fi, ADB, MTP, USB-OTG, Fastbootd, Haptics, FRP wipe, ABL preservation, and Root Manager
 
-## Build
+
+## Sync
 
 ```
-mkdir -p ~/android/AERA_16.0 &&
-cd ~/android/AERA_16.0 &&
-repo init --repo-url=https://gerrit.googlesource.com/git-repo --repo-rev=stable -u https://github.com/AERA-Recovery/android_manifest.git -b aera-16.0 &&
-mkdir -p device/oneplus .repo/local_manifests &&
-git clone -b aera-16.0 https://github.com/EXlipsecore/android_device_oneplus_aston-AERA.git device/oneplus/aston &&
-cp device/oneplus/aston/aera-local-manifest.xml .repo/local_manifests/aston.xml &&
-repo sync -c --force-sync --no-clone-bundle --no-tags -j$(nproc) &&
-source build/envsetup.sh &&
-lunch twrp_aston-bp2a-eng &&
+mkdir -p ~/android/AERA_16.0
+cd ~/android/AERA_16.0
+repo init -u https://github.com/AERA-Recovery/android_manifest.git -b aera-16.0
+repo sync -c --force-sync --no-clone-bundle --no-tags -j$(nproc)
+
+```
+
+## Build for OnePlus 12R / Ace 3 (aston)
+
+```
+cd ~/android/AERA_16.0
+git clone -b aera-16.0 \
+  https://github.com/EXlipsecore/android_device_oneplus_aston-AERA.git \
+  device/oneplus/aston
+source build/envsetup.sh
+lunch twrp_aston-bp2a-eng
 mka adbd recoveryimage
+
 ```
